@@ -1,27 +1,61 @@
+const fs = require("fs-extra");
+
+const spamStatesFile = "spam.json";
+let spamStates = loadSpamStates();
+
 let messageCounts = {};
-const spamThreshold = 5;
-const spamInterval = 60;
+const spamThreshold = 10;
+const spamInterval = 60000;
+
+function loadSpamStates() {
+  try {
+    const data = fs.readFileSync(spamStatesFile, "utf8");
+    return JSON.parse(data);
+  } catch (err) {
+    return {};
+  }
+}
+
+function saveSpamStates(states) {
+  fs.writeFileSync(spamStatesFile, JSON.stringify(states, null, 2));
+}
 
 module.exports = {
   config: {
     name: "spamkick",
-    aliases: [],
     version: "1.0",
-    author: "Jonell Magallanes & BLUE & kshitiz",
+    author: "Vex_kshitiz",
     countDown: 5,
     role: 0,
-    shortDescription: "Automatically detect and act on spam",
-    longDescription: "Automatically detect and act on spam",
-    category: "admin",
+    shortDescription: "",
+    longDescription: "kick the spammers",
+    category: "box",
     guide: "{pn}",
   },
 
-  onStart: async function ({ api, event, args }) {
-    api.sendMessage("This command functionality kicks the user when they are spamming in group chats", event.threadID, event.messageID);
+  onStart: async function ({ api, event }) {
+    const threadID = event.threadID;
+
+    if (!spamStates[threadID]) {
+      spamStates[threadID] = 'off';
+      saveSpamStates(spamStates);
+    }
+
+    if (event.body.toLowerCase().includes('spamkick off')) {
+      spamStates[threadID] = 'off';
+      saveSpamStates(spamStates);
+      api.sendMessage("SpamKick is now turned off for this chat.", threadID, event.messageID);
+    } else if (event.body.toLowerCase().includes('spamkick on')) {
+      spamStates[threadID] = 'on';
+      saveSpamStates(spamStates);
+      api.sendMessage("SpamKick is now turned on for this chat.", threadID, event.messageID);
+    }
   },
 
   onChat: function ({ api, event }) {
-    const { threadID, messageID, senderID } = event;
+    const { threadID, senderID } = event;
+
+    if (spamStates[threadID] !== 'on') return; 
 
     if (!messageCounts[threadID]) {
       messageCounts[threadID] = {};
@@ -37,7 +71,6 @@ module.exports = {
     } else {
       messageCounts[threadID][senderID].count++;
       if (messageCounts[threadID][senderID].count > spamThreshold) {
-        api.sendMessage("🚨🛡| Spam détecté. Le bot supprimera le spammeur du groupe ", threadID, messageID);
         api.removeUserFromGroup(senderID, threadID);
       }
     }
