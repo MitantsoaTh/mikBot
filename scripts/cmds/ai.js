@@ -1,83 +1,66 @@
-const axios = require('axios');
-
-// Define the fonts mapping
-const fonts = {
-    a: "𝖺", b: "𝖻", c: "𝖼", d: "𝖽", e: "𝖾", f: "𝖿", g: "𝗀", h: "𝗁", i: "𝗂",
-    j: "𝗃", k: "𝗄", l: "𝗅", m: "𝗆", n: "𝗇", o: "𝗈", p: "𝗉", q: "𝗊", r: "𝗋",
-    s: "𝗌", t: "𝗍", u: "𝗎", v: "𝗏", w: "𝗐", x: "𝗑", y: "𝗒", z: "𝗓",
-    A: "𝖠", B: "𝖡", C: "𝖢", D: "𝖣", E: "𝖤", F: "𝖥", G: "𝖦", H: "𝖧", I: "𝖨",
-    J: "𝖩", K: "𝖪", L: "𝖫", M: "𝖬", N: "𝖭", O: "𝖮", P: "𝖯", Q: "𝖰", R: "𝖱",
-    S: "𝖲", T: "𝖳", U: "𝖴", V: "𝖵", W: "𝖶", X: "𝖷", Y: "𝖸", Z: "𝖹",
-    ' ': ' ', // Keep space as is
-};
-
-async function fetchFromAI(url, params) {
-    try {
-        const response = await axios.get(url, { params });
-        return response.data;
-    } catch (error) {
-        console.error(error);
-        return null;
-    }
+const { getPrefix, getStreamFromURL, uploadImgbb } = global.utils;
+async function ai({ message: m, event: e, args: a, usersData: u }) {
+  var p = [`${await getPrefix(e.threadID)}${this.config.name}`,
+`${this.config.name}`
+/*"ai"
+*you can add more prefix here
+*/
+]; 
+ if (p.some(b => a[0].toLowerCase().startsWith(b))) {
+try {      
+let prompt = "";
+if (e.type === "message_reply" && e.messageReply.attachments && e.messageReply.attachments[0]?.type === "photo") {
+ const b = await uploadImgbb(e.messageReply.attachments[0].url);
+prompt = a.slice(1).join(" ") + ' ' + b.image.url;
+} else {
+ prompt = a.slice(1).join(" ");
 }
-
-async function getAIResponse(input, userId, messageID) {
-    const services = [
-        { url: 'https://ai-tools.replit.app/gpt', params: { prompt: input, uid: userId } },
-        { url: 'https://openaikey-x20f.onrender.com/api', params: { prompt: input } },
-        { url: 'http://fi1.bot-hosting.net:6518/gpt', params: { query: input } },
-        { url: 'https://ai-chat-gpt-4-lite.onrender.com/api/hercai', params: { question: input } }
-    ];
-
-    let response = "Your question? ";
-    let currentIndex = 0;
-
-    for (let i = 0; i < services.length; i++) {
-        const service = services[currentIndex];
-        const data = await fetchFromAI(service.url, service.params);
-        if (data && (data.gpt4 || data.reply || data.response)) {
-            response = data.gpt4 || data.reply || data.response;
-            break;
-        }
-        currentIndex = (currentIndex + 1) % services.length; // Move to the next service in the cycle
-    }
-
-    // Convert response to special fonts
-    const convertedResponse = Array.from(response)
-        .map(char => fonts[char] || char) // Use special font or original character if not in fonts
-        .join('');
-
-    return { response: convertedResponse, messageID };
+ var __ = [{ id: e.senderID, tag: await u.getName(e.senderID) }];
+ const r = await require("axios").post(`https://test-ai-ihc6.onrender.com/api`, {
+  prompt: prompt,
+ apikey: "GayKey-oWHmMb1t8ASljhpgSSUI",
+  name: __[0]['tag'],
+ id: __[0]['id'],
+ });
+var _ = r.data.result.replace(/{name}/g, __[0]['tag']).replace(/{pn}/g, p[0]);
+ if (r.data.av) {
+ if (Array.isArray(r.data.av)) {
+ const avs = r.data.av.map(url => getStreamFromURL(url));
+ const avss = await Promise.all(avs);
+  m.reply({
+ body: _,
+ mentions: __,
+ attachment: avss
+ });
+ } else {
+ m.reply({
+ body: _,
+ mentions: __,
+attachment: await getStreamFromURL(r.data.av)
+  });
+  }
+  } else {
+m.reply({
+body: _,
+mentions: __
+  });
+  }
+  } catch (error) {
+ m.reply("Error " + error);
+ }
+ }
 }
-
 module.exports = {
-    config: {
-        name: 'ai',
-        author: 'arn',
-        role: 0,
-        category: 'ai',
-        shortDescription: 'ai to ask anything',
-    },
-    onStart: async function ({ api, event, args }) {
-        const input = args.join(' ').trim();
-        if (!input) {
-            api.sendMessage(`🫰🌟`, event.threadID, event.messageID);
-            return;
-        }
-
-        const { response, messageID } = await getAIResponse(input, event.senderID, event.messageID);
-        api.sendMessage(`⚪🔵🔴`, event.threadID, messageID);
-    },
-    onChat: async function ({ event, message }) {
-        const messageContent = event.body.trim().toLowerCase();
-        if (messageContent.startsWith("ai")) {
-            const input = messageContent.replace(/^ai\s*/, "").trim();
-            const { response, messageID } = await getAIResponse(input, event.senderID, message.messageID);
-            // Construct message with special fonts
-            const formattedResponse = `
-            ••÷  🎀  𝑀𝒾𝓀𝓂❁𝓃  🎀  ÷•• \n▬▭▬▬▭▬▬▭▬▬▭▬\n${response} \n▬▭▬▬▭▬▬▭▬▬▭▬
-`;
-            message.reply(formattedResponse, messageID);
-        }
-    }
+config: {
+ name: "ai",
+aliases: [],
+version: 1.6,
+author: "Jun",
+role: 0,
+ shortDescription: "An AI that can do various tasks",
+ guide: "{pn} <query>",
+ category: "AI"
+ },
+ onStart: function() {},
+ onChat: ai
 };
