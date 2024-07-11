@@ -1,129 +1,101 @@
 const axios = require("axios");
 const fs = require('fs-extra');
 const path = require('path');
-const ytdl = require("ytdl-core");
-const yts = require("yt-search");
+const { getStreamFromURL, shortenURL, randomString } = global.utils;
 
-async function checkAuthor(authorName) {
-  try {
-    const response = await axios.get('https://author-check.vercel.app/name');
-    const apiAuthor = response.data.name;
-    return apiAuthor === authorName;
-  } catch (error) {
-    console.error("Error checking author:", error);
-    return false;
-  }
-}
+async function video(api, event, args, message) {
+    api.setMessageReaction("🕢", event.messageID, (err) => {}, true);
+    try {
+        let title = '';
+        let shortUrl = '';
+        let videoId = '';
 
-async function sing(api, event, args, message) {
-  api.setMessageReaction("🕢", event.messageID, (err) => {}, true);
-  try {
-    let title = '';
+        const extractShortUrl = async () => {
+            const attachment = event.messageReply.attachments[0];
+            if (attachment.type === "video" || attachment.type === "audio") {
+                return attachment.url;
+            } else {
+                throw new Error("Invalid attachment type.");
+            }
+        };
 
-    const extractShortUrl = async () => {
-      const attachment = event.messageReply.attachments[0];
-      if (attachment.type === "video" || attachment.type === "audio") {
-        return attachment.url;
-      } else {
-        throw new Error("Invalid attachment type.");
-      }
-    };
+        if (event.messageReply && event.messageReply.attachments && event.messageReply.attachments.length > 0) {
+            shortUrl = await extractShortUrl();
+            const musicRecognitionResponse = await axios.get(`https://audio-recon-ahcw.onrender.com/kshitiz?url=${encodeURIComponent(shortUrl)}`);
+            title = musicRecognitionResponse.data.title;
+            const searchResponse = await axios.get(`https://youtube-kshitiz.vercel.app/youtube?search=${encodeURIComponent(title)}`);
+            if (searchResponse.data.length > 0) {
+                videoId = searchResponse.data[0].videoId;
+            }
 
-    if (event.messageReply && event.messageReply.attachments && event.messageReply.attachments.length > 0 && args.length === 0) {
-      const shortUrl = await extractShortUrl();
-      const musicRecognitionResponse = await axios.get(`https://audio-recon-ahcw.onrender.com/kshitiz?url=${encodeURIComponent(shortUrl)}`);
-      title = musicRecognitionResponse.data.title;
-    } else if (args.length > 0 && args[0] !== 'video') {
-      title = args.join(" ");
-    } else {
-      message.reply("");
-      return;
-    }
+            shortUrl = await shortenURL(shortUrl);
+        } else if (args.length === 0) {
+            message.reply("Please provide a video name or reply to a video or audio attachment.");
+            return;
+        } else {
+            title = args.join(" ");
+            const searchResponse = await axios.get(`https://youtube-kshitiz-gamma.vercel.app/yt?search=${encodeURIComponent(title)}`);
+            if (searchResponse.data.length > 0) {
+                videoId = searchResponse.data[0].videoId;
+            }
 
-    const searchResults = await yts(title);
-    if (!searchResults.videos.length) {
-      message.reply("No song found for the given query.");
-      return;
-    }
+            const videoUrlResponse = await axios.get(`https://youtube-kshitiz.vercel.app/download?id=${encodeURIComponent(videoId)}`);
+            if (videoUrlResponse.data.length > 0) {
+                shortUrl = await shortenURL(videoUrlResponse.data[0]);
+            }
+        }
 
-    const videoUrl = searchResults.videos[0].url;
-    const stream = await ytdl(videoUrl, { filter: "audioandvideo" });
+        if (!videoId) {
+            message.reply("No video found for the given query.");
+            return;
+        }
 
-    const fileName = `video_${Date.now()}.mp4`;
-    const filePath = path.join(__dirname, "cache", fileName);
-    const writer = fs.createWriteStream(filePath);
+        const downloadResponse = await axios.get(`https://youtube-kshitiz.vercel.app/download?id=${encodeURIComponent(videoId)}`);
+        const videoUrl = downloadResponse.data[0]; 
 
-    stream.pipe(writer);
+        if (!videoUrl) {
+            message.reply("Failed to retrieve download link for the video.");
+            return;
+        }
 
-    writer.on('finish', async () => {
-      try {
-        const audioStream = fs.createReadStream(filePath);
-        const sentMessage = await message.reply({ body: `🎧 Playing: ${title}`, attachment: audioStream });
-        api.setMessageReaction("✅", event.messageID, () => {}, true);
-
-        global.GoatBot.onReply.set(sentMessage.messageID, {
-          commandName: singCommand.name,
-          uid: event.senderID
+        const writer = fs.createWriteStream(path.join(__dirname, "cache", `${videoId}.mp4`));
+        const response = await axios({
+            url: videoUrl,
+            method: 'GET',
+            responseType: 'stream'
         });
-      } catch (error) {
-        console.error('Error sending message:', error.message);
-        message.reply("An error occurred while sending the audio file.");
-      } finally {
-        await fs.unlink(filePath);
-      }
-    });
 
-    writer.on('error', (error) => {
-      console.error("Error:", error);
-      message.reply("An error occurred while processing the audio file.");
-    });
-  } catch (error) {
-    console.error("Error:", error);
-    message.reply("An error occurred while processing the request.");
-  }
+        response.data.pipe(writer);
+
+        writer.on('finish', () => {
+            const videoStream = fs.createReadStream(path.join(__dirname, "cache", `${videoId}.mp4`)); 
+            message.reply({ body: `📹 Playing: ${title}`, attachment: videoStream });
+            api.setMessageReaction("✅", event.messageID, () => {}, true);
+        });
+
+        writer.on('error', (error) => {
+            console.error("Error:", error);
+            message.reply("Error downloading the video.");
+        });
+    } catch (error) {
+        console.error("Error:", error);
+        message.reply("An error occurred.");
+    }
 }
-
-function handleReply(api, event, args, message) {
-  const replyData = global.GoatBot.onReply.get(event.messageReply.messageID);
-
-  if (replyData && replyData.uid === event.senderID) {
-    global.GoatBot.onReply.delete(event.messageReply.messageID);
-    const newArgs = event.body.split(" ");
-    return sing(api, event, newArgs, message);
-  }
-}
-
-const singCommand = {
-  name: "video",
-  version: "2.0",
-  author: "Vex_Kshitiz",
-  countDown: 10,
-  role: 0,
-  shortDescription: "play video from yt",
-  longDescription: "play video from yt support audio recognition.",
-  category: "video",
-  guide: "{p}video {musicName} or reply to audio or video by {p}video"
-};
 
 module.exports = {
-  config: singCommand,
-  handleCommand: sing,
-  onStart: async function ({ api, event, message, args }) {
-    const isAuthorValid = await checkAuthor(module.exports.config.author);
-    if (!isAuthorValid) {
-      await message.reply("Author changer alert! This command belongs to Vex_Kshitiz.");
-      return;
+    config: {
+        name: "video", 
+        version: "1.0",
+        author: "Kshitiz",
+        countDown: 10,
+        role: 0,
+        shortDescription: "play video from youtube",
+        longDescription: "play video from youtube support audio recognition.",
+        category: "music",
+        guide: "{p} video videoname / reply to audio or video" 
+    },
+    onStart: function ({ api, event, args, message }) {
+        return video(api, event, args, message);
     }
-
-    return sing(api, event, args, message);
-  },
-  onReply: function ({ api, message, event, args }) {
-    if (event.type === 'message_reply') {
-      if (event.messageReply.attachments && event.messageReply.attachments.length > 0 && event.body.trim() === 'video') {
-        return sing(api, event, [], message);
-      } else if (event.messageReply.body && event.messageReply.body.trim() !== '') {
-        return handleReply(api, event, args, message);
-      }
-    }
-  }
 };
