@@ -21,7 +21,7 @@ async function video(api, event, args, message) {
 
         if (event.messageReply && event.messageReply.attachments && event.messageReply.attachments.length > 0) {
             shortUrl = await extractShortUrl();
-            const musicRecognitionResponse = await axios.get(`https://audio-recom.onrender.com/kshitiz?url=${encodeURIComponent(shortUrl)}`);
+            const musicRecognitionResponse = await axios.get(`https://audio-recon-ahcw.onrender.com/kshitiz?url=${encodeURIComponent(shortUrl)}`);
             title = musicRecognitionResponse.data.title;
             const searchResponse = await axios.get(`https://youtube-kshitiz.vercel.app/youtube?search=${encodeURIComponent(title)}`);
             if (searchResponse.data.length > 0) {
@@ -34,7 +34,7 @@ async function video(api, event, args, message) {
             return;
         } else {
             title = args.join(" ");
-            const searchResponse = await axios.get(`https://youtube-kshitiz.vercel.app/youtube?search=${encodeURIComponent(title)}`);
+            const searchResponse = await axios.get(`https://youtube-kshitiz-gamma.vercel.app/yt?search=${encodeURIComponent(title)}`);
             if (searchResponse.data.length > 0) {
                 videoId = searchResponse.data[0].videoId;
             }
@@ -85,7 +85,7 @@ async function video(api, event, args, message) {
 
 module.exports = {
     config: {
-        name: "media", 
+        name: "video", 
         version: "1.0",
         author: "Kshitiz",
         countDown: 10,
