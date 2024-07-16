@@ -2,7 +2,7 @@ const axios = require('axios');
 
 const Prefixes = [
     'line',
-    'hunter',
+    'hunter', 
     'ae'
 ];
 
@@ -27,14 +27,14 @@ module.exports = {
 
             const prompt = event.body.substring(prefix.length).trim();
             if (!prompt) {
-                await message.reply("𝕯𝖆𝖗𝖐𝖂𝖊𝖇 vous écoute\n\n ");
-                api.setMessageReaction('👻', event.messageID);
+                await message.reply("≛ 𝗔𝗘𝗦𝗧𝗛𝗘𝗥 ≛\n\n (⁠･ั⁠ω⁠･ั⁠).....? ");
+                api.setMessageReaction('⚪', event.messageID);
                 return;
             }
 
             const response = await axios.get(`https://hiroshi-rest-api.replit.app/ai/jailbreak?ask=${encodeURIComponent(prompt)}`);
-            const answer = ` ☠️𝕯𝖆𝖗𝖐𝖂𝖊𝖇☠️   :\n──────────── \n${response.data.answer} 👻`;
-            api.setMessageReaction('👻', event.messageID);
+            const answer = `≛ 𝗔𝗘𝗦𝗧𝗛𝗘𝗥 ≛   :\n──────────── \n${response.data.answer} ☪️`;
+            api.setMessageReaction('🟣', event.messageID);
 
             await message.reply(answer);
 
