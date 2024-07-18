@@ -206,18 +206,9 @@ module.exports = {
   config: a,
   handleCommand: l,
   onStart: function ({ api, message, event, args }) {
-    if (args[0] && args[0].toLowerCase().startsWith('ai')) {
-      return l({ api, message, event, args });
-    } else {
-      message.reply("The command should start with 'Ai'.");
-    }
+    return l({ api, message, event, args });
   },
   onReply: function ({ api, message, event, args }) {
-    if (args[0] && args[0].toLowerCase().startsWith('ai')) {
-      return l({ api, message, event, args });
-    } else {
-      message.reply("The command should start with 'Ai'.");
-    }
+    return l({ api, message, event, args });
   }
 };
-      
