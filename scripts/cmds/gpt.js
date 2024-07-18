@@ -4,13 +4,6 @@ const path = require('path');
 const ytdl = require("ytdl-core");
 const yts = require("yt-search");
 
-const Prefixes = [
-    'line',
-    'ai',
-    'hunter', 
-    'ae'
-];
-
 async function lado(api, event, args, message) {
   try {
     const songName = args.join(" ");
@@ -121,10 +114,6 @@ async function l({ api, message, event, args }) {
     let sendTikTok = false;
     let sing = false;
 
-    if (!args[0] || !args[0].toLowerCase().startsWith('ai')) {
-      return message.reply("The command should start with 'Ai'.");
-    }
-
     if (args[0].toLowerCase() === "draw") {
       draw = true;
       n = args.slice(1).join(" ").trim();
@@ -217,9 +206,18 @@ module.exports = {
   config: a,
   handleCommand: l,
   onStart: function ({ api, message, event, args }) {
-    return l({ api, message, event, args });
+    if (args[0] && args[0].toLowerCase().startsWith('ai')) {
+      return l({ api, message, event, args });
+    } else {
+      message.reply("The command should start with 'Ai'.");
+    }
   },
   onReply: function ({ api, message, event, args }) {
-    return l({ api, message, event, args });
+    if (args[0] && args[0].toLowerCase().startsWith('ai')) {
+      return l({ api, message, event, args });
+    } else {
+      message.reply("The command should start with 'Ai'.");
+    }
   }
 };
+      
