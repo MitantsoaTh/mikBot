@@ -1,33 +1,63 @@
 const axios = require('axios');
-module.exports.config = {
-  name: 'ai',
-  version: '1.0.0',
-  role: 0,
-  hasPrefix: false,
-  aliases: ['gpt', 'openai'],
-  description: "An AI command powered by GPT-4",
-  usage: "Ai [promot]",
-  credits: '𝗮𝗲𝘀𝘁𝗵𝗲𝗿',
-  cooldown: 3,
-};
-module.exports.run = async function({
-  api,
-  event,
-  args
-}) {
-  const input = args.join(' ');
-  if (!input) {
-    api.sendMessage(`♡   ∩_∩\n    （„• ֊ •„)♡\n┏━∪∪━━━━ღ❦ღ┓`, event.threadID, event.messageID);
-    return;
-  }
-  api.sendMessage(``, event.threadID, event.messageID);
+
+async function fetchFromAI(url, params) {
   try {
-    const {
-      data
-    } = await axios.get(`https://hashier-api-globalgpt.vercel.app/api/globalgpt?q=${encodeURIComponent(input)}`);
-    const response = data.response;
-    api.sendMessage('♡   ∩_∩\n    （„• ֊ •„)♡\n┏━∪∪━━━━ღ❦ღ┓\n🌐['+ response +'] ♡\n♡   𝘢𝘦𝘴𝘵𝘩𝘦𝘳-[📩]\n┗ღ❦ღ━━━━━━━┛\n[✦]|𝗚𝗣𝗧-𝟰 ', event.threadID, event.messageID);
+    const response = await axios.get(url, { params });
+    return response.data;
   } catch (error) {
-    api.sendMessage('An error occurred while processing your request.', event.threadID, event.messageID);
+    console.error(error);
+    return null;
+  }
+}
+
+async function getAIResponse(input, userId, messageID) {
+  const services = [
+    { url: 'https://ai-tools.replit.app/gpt', params: { prompt: input, uid: userId } },
+    { url: 'https://openaikey-x20f.onrender.com/api', params: { prompt: input } },
+    { url: 'http://fi1.bot-hosting.net:6518/gpt', params: { query: input } },
+    { url: 'https://ai-chat-gpt-4-lite.onrender.com/api/hercai', params: { question: input } }
+  ];
+
+  let response = "Bonjour et bienvenue ! Je suis votre assistant virtuel. Je suis ici pour répondre à vos questions et vous aider du mieux que je peux. Que puis-je faire pour vous aujourd'hui ?.";
+  let currentIndex = 0;
+
+  for (let i = 0; i < services.length; i++) {
+    const service = services[currentIndex];
+    const data = await fetchFromAI(service.url, service.params);
+    if (data && (data.gpt4 || data.reply || data.response)) {
+      response = data.gpt4 || data.reply || data.response;
+      break;
+    }
+    currentIndex = (currentIndex + 1) % services.length; // Move to the next service in the cycle
+  }
+
+  return { response, messageID };
+}
+
+module.exports = {
+  config: {
+    name: 'ai',
+    author: 'Arn',
+    role: 0,
+    category: 'ai',
+    shortDescription: 'ai to ask anything',
+  },
+  onStart: async function ({ api, event, args }) {
+    const input = args.join(' ').trim();
+    if (!input) {
+      api.sendMessage(`𝕸𝖎𝖐𝖒𝖔𝖓 𝕳𝖎𝖓𝖆𝖙𝖆\n━━━━━━━━━━━━━━━━\nPlease provide a question or statement.\n━━━━━━━━━━━━━━━━`, event.threadID, event.messageID);
+      return;
+    }
+
+    const { response, messageID } = await getAIResponse(input, event.senderID, event.messageID);
+    api.sendMessage(`${response}`, event.threadID, messageID);
+  },
+  onChat: async function ({ event, message }) {
+    const messageContent = event.body.trim().toLowerCase();
+    if (messageContent.startsWith("ai")) {
+      const input = messageContent.replace(/^ai\s*/, "").trim();
+      const { response, messageID } = await getAIResponse(input, event.senderID, message.messageID);
+      message.reply(`${response}`, messageID);
+    }
   }
 };
