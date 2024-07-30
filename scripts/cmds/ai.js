@@ -18,7 +18,7 @@ async function getAIResponse(input, userId, messageID) {
     { url: 'https://ai-chat-gpt-4-lite.onrender.com/api/hercai', params: { question: input } }
   ];
 
-  let response = "𝗔𝗦𝗦𝗜𝗦𝗧𝗔𝗡𝗧 𝗜𝗦 𝗔𝗟𝗜𝗩𝗘 🪄✅.";
+  let response = "𝓗𝓮𝓵𝓵𝓸, 𝓶𝔂 𝓷𝓪𝓶𝓮 𝓲𝓼 𝓜𝓲𝓴𝓶𝓸𝓷 𝓪𝓷𝓭 𝓘 𝓪𝓶 𝓱𝓮𝓻𝓮 𝓽𝓸 𝓪𝓼𝓼𝓲𝓼𝓽 𝔂𝓸𝓾 𝔀𝓲𝓽𝓱 𝓪𝓷𝔂 𝓺𝓾𝓮𝓼𝓽𝓲𝓸𝓷𝓼 𝓸𝓻 𝓽𝓪𝓼𝓴𝓼 𝔂𝓸𝓾 𝓶𝓪𝔂 𝓱𝓪𝓿𝓮. 𝓗𝓸𝔀 𝓬𝓪𝓷 𝓘 𝓱𝓮𝓵𝓹 𝔂𝓸𝓾 𝓽𝓸𝓭𝓪𝔂?";
   let currentIndex = 0;
 
   for (let i = 0; i < services.length; i++) {
@@ -45,19 +45,19 @@ module.exports = {
   onStart: async function ({ api, event, args }) {
     const input = args.join(' ').trim();
     if (!input) {
-      api.sendMessage(`𝗔𝗦𝗦𝗜𝗦𝗧𝗔𝗡𝗧 𝗔𝗡𝗦𝗪𝗘𝗥𝗘𝗗✅\n━━━━━━━━━━━━━━━━\nPlease provide a question or statement.\n━━━━━━━━━━━━━━━━`, event.threadID, event.messageID);
+      api.sendMessage(`♕🐳  𝕞𝔦𝕂๓๏𝐍  😝🐉\n🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟\nPlease provide a question or statement.\n🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟`, event.threadID, event.messageID);
       return;
     }
 
     const { response, messageID } = await getAIResponse(input, event.senderID, event.messageID);
-    api.sendMessage(`𝗔𝗦𝗦𝗜𝗦𝗧𝗔𝗡𝗧 𝗔𝗡𝗦𝗪𝗘𝗥𝗘𝗗✅ \n━━━━━━━━━━━━━━━━\n${response}\n━━━━━━━━━━━━━━━━`, event.threadID, messageID);
+    api.sendMessage(`♕🐳  𝕞𝔦𝕂๓๏𝐍  😝🐉\n🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟\n${response}\n🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟`, event.threadID, messageID);
   },
   onChat: async function ({ event, message }) {
     const messageContent = event.body.trim().toLowerCase();
     if (messageContent.startsWith("ai")) {
       const input = messageContent.replace(/^ai\s*/, "").trim();
       const { response, messageID } = await getAIResponse(input, event.senderID, message.messageID);
-      message.reply(`𝗔𝗦𝗦𝗜𝗦𝗧𝗔𝗡𝗧 𝗔𝗡𝗦𝗪𝗘𝗥𝗘𝗗✅\n━━━━━━━━━━━━━━━━\n${response}\n━━━━━━━━━━━━━━━━`, messageID);
+      message.reply(`♕🐳  𝕞𝔦𝕂๓๏𝐍  😝🐉\n🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟\n${response}\n🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟`, messageID);
     }
   }
 };
