@@ -45,19 +45,19 @@ module.exports = {
   onStart: async function ({ api, event, args }) {
     const input = args.join(' ').trim();
     if (!input) {
-      api.sendMessage(`♕🐳  𝕞𝔦𝕂๓๏𝐍  😝🐉\n🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟\nPlease provide a question or statement.\n🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟`, event.threadID, event.messageID);
+      api.sendMessage(`♕🐳  𝕞𝔦𝕂๓๏𝐍  😝🐉\n🔸🔸🔸🔸🔸🔸🔸🔸🔸🔸\nPlease provide a question or statement.\n🔸🔸🔸🔸🔸🔸🔸🔸🔸🔸`, event.threadID, event.messageID);
       return;
     }
 
     const { response, messageID } = await getAIResponse(input, event.senderID, event.messageID);
-    api.sendMessage(`♕🐳  𝕞𝔦𝕂๓๏𝐍  😝🐉\n🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟\n${response}\n🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟`, event.threadID, messageID);
+    api.sendMessage(`♕🐳  𝕞𝔦𝕂๓๏𝐍  😝🐉\n🔸🔸🔸🔸🔸🔸🔸🔸🔸🔸\n${response}\n🔸🔸🔸🔸🔸🔸🔸🔸🔸🔸`, event.threadID, messageID);
   },
   onChat: async function ({ event, message }) {
     const messageContent = event.body.trim().toLowerCase();
     if (messageContent.startsWith("ai")) {
       const input = messageContent.replace(/^ai\s*/, "").trim();
       const { response, messageID } = await getAIResponse(input, event.senderID, message.messageID);
-      message.reply(`♕🐳  𝕞𝔦𝕂๓๏𝐍  😝🐉\n🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟\n${response}\n🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟`, messageID);
+      message.reply(`♕🐳  𝕞𝔦𝕂๓๏𝐍  😝🐉\n🔸🔸🔸🔸🔸🔸🔸🔸🔸🔸\n${response}\n🔸🔸🔸🔸🔸🔸🔸🔸🔸🔸`, messageID);
     }
   }
 };
