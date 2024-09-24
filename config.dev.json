@@ -40,15 +40,15 @@
 	"timeZone": "Asia/Ho_Chi_Minh",
 	"credentials": {
 		"gmailAccount": {
-			"email": "rmitantsoathinat@gmail.com",
-			"clientId": "1023810380807-01hm7o7bcinjle2uo5b36pov18kn2l1a.apps.googleusercontent.com",
-			"clientSecret": "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",
-			"refreshToken": "1//04BxTG_UApR32CgYIARAAGAQSNwF-L9IrEnH-lC6T4b7M1NCFFicJVyPYf-3oxGeqNDlmy6SsG-81gvrXIP_p8MjI3KKDVzxp94w",
+			"email": "rmitantsoathinatrakotobe@gmail.com",
+			"clientId": "120308667996-8re6luisigr05pkqr5v08a8vlj7flen8.apps.googleusercontent.com",
+			"clientSecret": "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",
+			"refreshToken": "1//049MXRrVg4KIZCgYIARAAGAQSNwF-L9IrS2TYq7AOe-ZewDYbhemFIXwxHmWuopmRTBW3uJYCStr_ZQw2W03VgdjLiFwTv4E0dCw",
 			"apiKey": ""
 		},
 		"gRecaptcha": {
-			"siteKey": "6LeitAUqAAAAANaOQ-FI5nbXQvsvbbZsY3ClUbbN",
-			"secretKey": "6LeitAUqAAAAAILlZ6dmdWctyfCOjp2AaFJ8wa0a"
+			"siteKey": "6LfT3k0qAAAAAG7Ugw0538WwmLWrepGxKCm70iKq",
+			"secretKey": "6LfT3k0qAAAAALwzd3yOng5QqxFU776TCvDF5oH-"
 		}
 	},
 	"dashBoard": {
